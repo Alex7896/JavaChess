@@ -1,17 +1,17 @@
 package modele.jeu.pieces;
 
 import modele.jeu.Couleur;
-import modele.jeu.Coup;
 import modele.jeu.Piece;
+import modele.jeu.decorators.*;
 import modele.plateau.Plateau;
 
 public class Dame extends Piece {
-    @Override
-    public boolean coupValide(Coup coup) {
-        return false;
-    }
 
     public Dame(Plateau plateau, Couleur couleur) {
         super(plateau, couleur);
+        // La dame peut aller aussi loin que possible dans toutes les directions.
+        dCA = new DecoratorDiag(this, plateau,
+                new DecoratorLigne(this, plateau, null, 8), 8);
     }
 }
+

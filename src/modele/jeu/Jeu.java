@@ -46,25 +46,50 @@ public class Jeu extends Thread {
         Case dep = plateau.getCases()[c.dep.x][c.dep.y];
         Case arr = plateau.getCases()[c.arr.x][c.arr.y];
 
-        arr.setPiece(dep.getPiece());
-        dep.getPiece().setCase(arr);
+        Piece piece = dep.getPiece();
+
+        // ⚠️ On NE change pas encore aDejaBouge ici
+        arr.setPiece(piece);
         dep.setPiece(null);
+
+        piece.setCase(arr); // ça ne change plus aDejaBouge
+        piece.setADejaBouge(true); // ✅ et là, maintenant c’est safe
 
         System.out.println("coup applique");
 
-        // TODO: gérer la capture, la promotion, le roque, etc.
         plateau.notifierChangement();
     }
 
+
+
+
+
     private boolean coupValide(Coup c) {
+        System.out.println("Validation du coup : " + c.dep + " -> " + c.arr);
+
         Piece piece = plateau.getCases()[c.dep.x][c.dep.y].getPiece();
-        if (piece == null) return false;
+        if (piece == null) {
+            System.out.println("Aucune pièce à la position de départ.");
+            return false;
+        }
+
+        System.out.println("Pièce trouvée : " + piece.getClass().getSimpleName() + " (" + piece.getCouleur() + ")");
+        System.out.println("aDejaBouge() = " + piece.aDejaBouge());
 
         Joueur joueurActuel = getJoueurCourant();
-        if (piece.getCouleur() != joueurActuel.getCouleur()) return false;
+        if (piece.getCouleur() != joueurActuel.getCouleur()) {
+            System.out.println("Ce n'est pas le tour de cette pièce !");
+            return false;
+        }
 
-        return piece.dCA.getCA().contains(plateau.getCases()[c.arr.x][c.arr.y]);
+        var accessibles = piece.dCA.getCA();
+        System.out.println("Cases accessibles : " + accessibles);
+
+        boolean valide = accessibles.contains(plateau.getCases()[c.arr.x][c.arr.y]);
+        System.out.println("Est-ce que la case d'arrivée est dedans ? " + valide);
+        return valide;
     }
+
 
     private boolean partieTermine() {
         return false;

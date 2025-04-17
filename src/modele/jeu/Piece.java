@@ -9,8 +9,8 @@ public abstract class Piece {
     protected Case c;
     protected Couleur couleur;
     public DecoratorCasesAccessibles dCA; // NOTE: Peut etre mettre en protected et faire un getter
+    private boolean dejaBouge = false;
 
-    public abstract boolean coupValide(Coup coup); // TODO: A supprimer
 
     public Piece(Plateau plateau, Couleur couleur) {
         this.couleur = couleur;
@@ -24,6 +24,14 @@ public abstract class Piece {
     public void setCase(Case c) {
         this.c = c;
     }
+
+    public boolean aDejaBouge() { return dejaBouge; }
+
+    public void setADejaBouge(boolean aDejaBouge) {
+        this.dejaBouge = aDejaBouge;
+    }
+
+
 
     public Case getCase() {
         return c;

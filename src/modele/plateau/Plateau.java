@@ -55,10 +55,10 @@ public class Plateau extends Observable {
         tab[7][0].setPiece(new Tour(this, Couleur.NOIR));
         tab[7][0].getPiece().setCase(tab[7][0]);
 
-//        for (int i = 0; i < 8; i++) {
-//            tab[i][1].setPiece(new Pion(this, Couleur.NOIR));
-//            tab[i][1].getPiece().setCase(tab[i][1]);
-//        }
+        for (int i = 0; i < 8; i++) {
+            tab[i][1].setPiece(new Pion(this, Couleur.NOIR));
+            tab[i][1].getPiece().setCase(tab[i][1]);
+        }
 
         // Pièces blanches
         tab[0][7].setPiece(new Tour(this, Couleur.BLANC));
@@ -85,10 +85,10 @@ public class Plateau extends Observable {
         tab[7][7].setPiece(new Tour(this, Couleur.BLANC));
         tab[7][7].getPiece().setCase(tab[7][7]);
 
-//        for (int i = 0; i < 8; i++) {
-//            tab[i][6].setPiece(new Pion(this, Couleur.BLANC));
-//            tab[i][6].getPiece().setCase(tab[i][6]);
-//        }
+        for (int i = 0; i < 8; i++) {
+            tab[i][6].setPiece(new Pion(this, Couleur.BLANC));
+            tab[i][6].getPiece().setCase(tab[i][6]);
+        }
     }
 
     public void notifierChangement() {
