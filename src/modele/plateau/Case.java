@@ -1,7 +1,6 @@
 package modele.plateau;
 
 import modele.jeu.Piece;
-
 import java.awt.*;
 
 public class Case {
@@ -16,6 +15,14 @@ public class Case {
         return position;
     }
 
+    public int getX() {
+        return position.x;
+    }
+
+    public int getY() {
+        return position.y;
+    }
+
     public Piece getPiece() {
         return piece;
     }
@@ -24,7 +31,6 @@ public class Case {
         this.piece = piece;
     }
 
-    // TODO: temporaire
     @Override
     public String toString() {
         return position.x + " " + position.y;

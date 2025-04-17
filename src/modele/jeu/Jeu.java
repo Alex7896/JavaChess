@@ -1,8 +1,16 @@
 package modele.jeu;
 
+import modele.jeu.pieces.Dame;
+import modele.jeu.pieces.Fou;
+import modele.jeu.pieces.Pion;
 import modele.jeu.pieces.Roi;
+import modele.jeu.pieces.*;
 import modele.plateau.Plateau;
 import modele.plateau.Case;
+
+import java.util.ArrayList;
+
+import java.util.ArrayList;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -14,12 +22,14 @@ public class Jeu extends Thread {
     public Coup coup;
 
     private Couleur tourActuel;
+    private Coup dernierCoup; // Pour la prise en passant
 
     public Jeu() {
         this.plateau = new Plateau();
+        this.plateau.setJeu(this); // 🔁 Lien Plateau → Jeu
         this.joueurB = new Joueur(this, Couleur.BLANC);
         this.joueurN = new Joueur(this, Couleur.NOIR);
-        this.tourActuel = Couleur.BLANC; // Le tour commence avec les Blancs
+        this.tourActuel = Couleur.BLANC;
     }
 
     @Override
@@ -58,12 +68,37 @@ public class Jeu extends Thread {
 
         Piece piece = dep.getPiece();
 
-        // ⚠️ On NE change pas encore aDejaBouge ici
+        // 🔥 Prise en passant
+        if (piece instanceof Pion &&
+                Math.abs(c.arr.x - c.dep.x) == 1 &&
+                plateau.getCases()[c.arr.x][c.arr.y].getPiece() == null) {
+
+            int direction = (piece.getCouleur() == Couleur.BLANC) ? 1 : -1;
+            Case prise = plateau.getCases()[c.arr.x][c.arr.y + direction];
+
+            if (prise != null && prise.getPiece() instanceof Pion) {
+                prise.setPiece(null);
+                System.out.println("Prise en passant effectuée !");
+            }
+        }
+
         arr.setPiece(piece);
         dep.setPiece(null);
 
-        piece.setCase(arr); // ça ne change plus aDejaBouge
-        piece.setADejaBouge(true); // ✅ et là, maintenant c’est safe
+        piece.setCase(arr);
+        piece.setADejaBouge(true);
+
+        if (piece instanceof Pion) {
+            int ligneArrivee = c.arr.y;
+            boolean estEnDerniereLigne = (piece.getCouleur() == Couleur.BLANC && ligneArrivee == 0)
+                    || (piece.getCouleur() == Couleur.NOIR && ligneArrivee == 7);
+
+            if (estEnDerniereLigne) {
+                demanderPromotion(piece, arr);
+            }
+        }
+
+        this.dernierCoup = c; // 💾 Sauvegarde du dernier coup
 
         System.out.println("coup applique");
 
@@ -208,26 +243,48 @@ public class Jeu extends Thread {
 
     // Renvoie le joueur dont c'est le tour
     private Joueur getJoueurCourant() {
-        if (tourActuel == Couleur.BLANC) {
-            return joueurB;
-        } else {
-            return joueurN;
-        }
+        return (tourActuel == Couleur.BLANC) ? joueurB : joueurN;
     }
 
     public Plateau getPlateau() {
         return plateau;
     }
 
+    public Coup getDernierCoup() {
+        return dernierCoup;
+    }
 
-    // TODO A SUPPRIMER
-    public void demandeDeplacementPiece(Case depart, Case arrivee) {
-        // Logique de déplacement de la pièce
-        Piece piece = depart.getPiece();
-        if (piece != null) {
-            arrivee.setPiece(piece);
-            depart.setPiece(null);
-            plateau.notifyObservers();
+    private void demanderPromotion(Piece pion, Case c) {
+        String[] options = {"Dame", "Fou", "Tour", "Cavalier"};
+        String choix = (String) javax.swing.JOptionPane.showInputDialog(
+                null,
+                "Choisissez une pièce pour la promotion :",
+                "Promotion du pion",
+                javax.swing.JOptionPane.PLAIN_MESSAGE,
+                null,
+                options,
+                "Dame"
+        );
+
+        if (choix != null) {
+            Piece nouvellePiece = null;
+            Couleur couleur = pion.getCouleur();
+
+            switch (choix) {
+                case "Dame":
+                    nouvellePiece = new Dame(plateau, couleur); break;
+                case "Fou":
+                    nouvellePiece = new Fou(plateau, couleur); break;
+                case "Tour":
+                    nouvellePiece = new Tour(plateau, couleur); break;
+                case "Cavalier":
+                    nouvellePiece = new Cavalier(plateau, couleur); break;
+            }
+
+            if (nouvellePiece != null) {
+                nouvellePiece.setCase(c);
+                c.setPiece(nouvellePiece);
+            }
         }
     }
 }

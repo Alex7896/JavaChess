@@ -1,6 +1,8 @@
 package modele.jeu.decorators;
 
+import modele.jeu.Coup;
 import modele.jeu.Piece;
+import modele.jeu.pieces.Pion;
 import modele.plateau.Case;
 import modele.plateau.Plateau;
 
@@ -41,6 +43,27 @@ public class DecoratorPion extends DecoratorCasesAccessibles {
             if (diagonale != null && diagonale.getPiece() != null &&
                     diagonale.getPiece().getCouleur() != piece.getCouleur()) {
                 cases.add(diagonale);
+            }
+        }
+
+        Coup dernier = plateau.getJeu().getDernierCoup();
+        if (dernier != null) {
+            Case dep = plateau.getCases()[dernier.dep.x][dernier.dep.y];
+            Case arr = plateau.getCases()[dernier.arr.x][dernier.arr.y];
+            Piece pieceDernier = arr.getPiece();
+
+            if (pieceDernier instanceof Pion &&
+                    pieceDernier.getCouleur() != piece.getCouleur() &&
+                    Math.abs(dernier.arr.y - dernier.dep.y) == 2 &&
+                    arr.getY() == c.getY()) {
+
+                int dx = arr.getX() - c.getX();
+                if (Math.abs(dx) == 1) {
+                    Case cible = plateau.getCaseRelative(c, dx, direction);
+                    if (cible != null && cible.getPiece() == null) {
+                        cases.add(cible);
+                    }
+                }
             }
         }
 
