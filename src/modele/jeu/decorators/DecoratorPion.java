@@ -27,7 +27,6 @@ public class DecoratorPion extends DecoratorCasesAccessibles {
             cases.add(devant);
 
             // Avancer de deux cases si en position de départ
-            System.out.println("aDejaBouge() = " + piece.aDejaBouge());
             if (!piece.aDejaBouge()) {
                 Case deuxDevant = plateau.getCaseRelative(devant, 0, direction);
                 if (deuxDevant != null && deuxDevant.getPiece() == null) {

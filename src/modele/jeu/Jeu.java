@@ -180,7 +180,6 @@ public class Jeu extends Thread {
 
 
     private boolean coupValide(Coup c) {
-        System.out.println("Validation du coup : " + c.dep + " -> " + c.arr);
 
         Case caseDep = plateau.getCases()[c.dep.x][c.dep.y];
         Case caseArr = plateau.getCases()[c.arr.x][c.arr.y];
