@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.*;
+import javax.swing.JOptionPane;
 
 
 import modele.jeu.*;
@@ -190,19 +191,31 @@ public class VueControleur extends JFrame implements Observer {
         }
     }
 
+    public void afficherFinPartie() {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Échec et Mat !\nLa partie est terminée.",
+                    "Fin de la partie",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        });
+    }
+
     @Override
     public void update(Observable o, Object arg) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            // Si on est déjà sur le thread graphique, on rafraîchit directement
+        Runnable updateTask = () -> {
             mettreAJourAffichage();
+
+            if (jeu != null && jeu.estEnEchecEtMat(jeu.getTourActuel())) {
+                afficherFinPartie();
+            }
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateTask.run();
         } else {
-            // Sinon, on demande au thread graphique de faire le rafraîchissement
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    mettreAJourAffichage();
-                }
-            });
+            SwingUtilities.invokeLater(updateTask);
         }
     }
 }

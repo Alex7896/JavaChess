@@ -7,6 +7,7 @@ import modele.jeu.pieces.Roi;
 import modele.jeu.pieces.*;
 import modele.plateau.Plateau;
 import modele.plateau.Case;
+import javax.swing.JOptionPane;
 
 import java.util.ArrayList;
 
@@ -53,7 +54,7 @@ public class Jeu extends Thread {
             changerTour();
 
             // Vérifier si c'est un échec et mat
-            if (estEnEchecEtMat(getJoueurCourant().getCouleur())) {
+            if (estEnEchecEtMat(tourActuel)) {
                 System.out.println("Échec et Mat !");
                 break; // Fin de la partie
             }
@@ -155,6 +156,10 @@ public class Jeu extends Thread {
 
         // Si aucun coup ne permet de sortir de l'échec, c'est un mat
         return true;
+    }
+
+    public Couleur getTourActuel() {
+        return tourActuel;
     }
 
 
