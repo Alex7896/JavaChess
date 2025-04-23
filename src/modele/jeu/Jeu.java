@@ -69,6 +69,15 @@ public class Jeu extends Thread {
 
         Piece piece = dep.getPiece();
 
+        // Gestion spéciale du roque
+        if (piece instanceof Roi && Math.abs(c.arr.x - c.dep.x) == 2) {
+            effectuerRoque(dep, arr);
+            piece.setADejaBouge(true);
+            this.dernierCoup = c;
+            plateau.notifierChangement();
+            return;
+        }
+
         // 🔥 Prise en passant
         if (piece instanceof Pion &&
                 Math.abs(c.arr.x - c.dep.x) == 1 &&
@@ -105,6 +114,33 @@ public class Jeu extends Thread {
 
         plateau.notifierChangement();
     }
+
+    private void effectuerRoque(Case depRoi, Case arrRoi) {
+        int direction = arrRoi.getX() > depRoi.getX() ? 1 : -1; // 1 pour petit roque, -1 pour grand roque
+        int y = depRoi.getY();
+
+        // Déplacer le roi
+        arrRoi.setPiece(depRoi.getPiece());
+        depRoi.setPiece(null);
+        arrRoi.getPiece().setCase(arrRoi);
+
+        // Trouver et déplacer la tour
+        int tourX = (direction > 0) ? 7 : 0; // 7 pour petit roque (colonne h), 0 pour grand roque (colonne a)
+        Case caseTour = plateau.getCases()[tourX][y];
+        Piece tour = caseTour.getPiece();
+
+        // Case destination tour (à côté du roi)
+        int newTourX = arrRoi.getX() - direction;
+        Case caseDestinationTour = plateau.getCases()[newTourX][y];
+
+        caseDestinationTour.setPiece(tour);
+        caseTour.setPiece(null);
+        if (tour != null) {
+            tour.setCase(caseDestinationTour);
+            tour.setADejaBouge(true);
+        }
+    }
+
 
     public boolean estEnEchec(Couleur couleur) {
         Case caseRoi = trouverRoi(couleur);
