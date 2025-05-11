@@ -9,9 +9,12 @@ import modele.plateau.Plateau;
 import modele.plateau.Case;
 import javax.swing.JOptionPane;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -20,6 +23,7 @@ import java.util.HashMap;
 
 public class Jeu extends Thread {
     private HashMap<String, Integer> historiquePositions = new HashMap<>();
+    private List<Coup> historiqueCoup = new ArrayList<>();
 
     private Plateau plateau;
     private Joueur joueurB;
@@ -61,6 +65,7 @@ public class Jeu extends Thread {
             historiquePositions.put(hashPosition, historiquePositions.getOrDefault(hashPosition, 0) + 1);
             if (historiquePositions.get(hashPosition) >= 3) {
                 System.out.println("Nulle par répétition de position !");
+                sauverEnPGN("partie.pgn");
                 break; // Fin de la partie
             }
             changerTour();
@@ -68,12 +73,18 @@ public class Jeu extends Thread {
             // Vérifier si c'est un échec et mat
             if (estEnEchecEtMat(tourActuel)) {
                 System.out.println("Échec et Mat !");
+                sauverEnPGN("partie.pgn");
                 break; // Fin de la partie
+
             }
+
         }
+
+
 
         // TODO: Logique de fin de partie
     }
+
 
     private String genererHashPosition() {
         StringBuilder sb = new StringBuilder();
@@ -142,7 +153,7 @@ public class Jeu extends Thread {
         }
 
         this.dernierCoup = c; // 💾 Sauvegarde du dernier coup
-
+        historiqueCoup.add(c);
         System.out.println("coup applique");
 
         plateau.notifierChangement();
@@ -361,4 +372,71 @@ public class Jeu extends Thread {
             }
         }
     }
+
+        public void sauverEnPGN(String chemin) {
+            try (PrintWriter writer = new PrintWriter(chemin)) {
+                int num = 1;
+                for (int i = 0; i < historiqueCoup.size(); i++) {
+                    if (i % 2 == 0) writer.print(num++ + ". ");
+                    writer.print(formatCoup(historiqueCoup.get(i)) + " ");
+                }
+                System.out.println("Partie enregistrée au format PGN : " + chemin);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    private String formatCoup(Coup coup) {
+        String nom;
+        String symbole;
+
+        if (coup == null) return "";
+
+        // On utilise directement les coordonnées et non pas la pièce sur l'échiquier actuel
+        int dx = coup.dep.x;
+        int dy = coup.dep.y;
+        int ax = coup.arr.x;
+        int ay = coup.arr.y;
+
+        // On tente d'inférer la pièce depuis le mouvement (approximatif)
+        Piece piece = coup.piece != null ? coup.piece : plateau.getCases()[dx][dy].getPiece();
+        if (piece == null) return "";
+
+        nom = piece.getClass().getSimpleName();
+        symbole = switch (nom) {
+            case "Dame" -> "Q";
+            case "Tour" -> "R";
+            case "Fou" -> "B";
+            case "Cavalier" -> "N";
+            case "Roi" -> "K";
+            default -> "";
+        };
+
+        // Roque
+        if (piece instanceof Roi && Math.abs(ax - dx) == 2) {
+            return (ax > dx) ? "O-O" : "O-O-O";
+        }
+
+        char colonneArr = (char) ('a' + ax);
+        int ligneArr = 8 - ay;
+        char colonneDep = (char) ('a' + dx);
+
+        boolean estPrise = coup.prise != null;
+
+        String prise = estPrise ? "x" : "";
+
+        if (nom.equals("Pion") && estPrise) {
+            return "" + colonneDep + "x" + colonneArr + ligneArr;
+        }
+
+        if (nom.equals("Pion")) {
+            return "" + colonneArr + ligneArr;
+        }
+
+        return symbole + prise + colonneArr + ligneArr;
+    }
+
+
+
+
 }
