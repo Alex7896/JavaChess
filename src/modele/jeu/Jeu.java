@@ -15,8 +15,12 @@ import java.util.ArrayList;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class Jeu extends Thread {
+    private HashMap<String, Integer> historiquePositions = new HashMap<>();
+
     private Plateau plateau;
     private Joueur joueurB;
     private Joueur joueurN;
@@ -29,7 +33,7 @@ public class Jeu extends Thread {
         this.plateau = new Plateau();
         this.plateau.setJeu(this); // 🔁 Lien Plateau → Jeu
         this.joueurB = new Joueur(this, Couleur.BLANC);
-        this.joueurN = new Joueur(this, Couleur.NOIR);
+        this.joueurN = new JoueurIA(this, Couleur.NOIR); // 💥 IA joue les noirs
         this.tourActuel = Couleur.BLANC;
     }
 
@@ -51,6 +55,14 @@ public class Jeu extends Thread {
                 c = j.getCoup();
             }
             appliquerCoup(c);
+            String hashPosition = genererHashPosition();
+
+            // 🔄 Enregistrement dans la hashmap
+            historiquePositions.put(hashPosition, historiquePositions.getOrDefault(hashPosition, 0) + 1);
+            if (historiquePositions.get(hashPosition) >= 3) {
+                System.out.println("Nulle par répétition de position !");
+                break; // Fin de la partie
+            }
             changerTour();
 
             // Vérifier si c'est un échec et mat
@@ -62,6 +74,27 @@ public class Jeu extends Thread {
 
         // TODO: Logique de fin de partie
     }
+
+    private String genererHashPosition() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int y = 0; y < Plateau.SIZE_Y; y++) {
+            for (int x = 0; x < Plateau.SIZE_X; x++) {
+                Piece piece = plateau.getCases()[x][y].getPiece();
+                if (piece == null) {
+                    sb.append(".");
+                } else {
+                    String abbrev = piece.getClass().getSimpleName().substring(0, 1);
+                    sb.append(piece.getCouleur() == Couleur.BLANC ? abbrev.toUpperCase() : abbrev.toLowerCase());
+                }
+            }
+        }
+
+        sb.append(tourActuel); // Pour distinguer selon le joueur qui doit jouer
+
+        return sb.toString();
+    }
+
 
     private void appliquerCoup(Coup c) {
         Case dep = plateau.getCases()[c.dep.x][c.dep.y];
@@ -113,6 +146,7 @@ public class Jeu extends Thread {
         System.out.println("coup applique");
 
         plateau.notifierChangement();
+
     }
 
     private void effectuerRoque(Case depRoi, Case arrRoi) {
@@ -215,7 +249,7 @@ public class Jeu extends Thread {
 
 
 
-    private boolean coupValide(Coup c) {
+    public boolean coupValide(Coup c) {
 
         Case caseDep = plateau.getCases()[c.dep.x][c.dep.y];
         Case caseArr = plateau.getCases()[c.arr.x][c.arr.y];

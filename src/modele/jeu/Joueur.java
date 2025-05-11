@@ -1,8 +1,8 @@
 package modele.jeu;
 
 public class Joueur {
-    private final Jeu jeu;
-    private final Couleur couleur;
+    public final Jeu jeu;
+    public final Couleur couleur;
 
     public Joueur(Jeu jeu, Couleur couleur) {
         this.jeu = jeu;

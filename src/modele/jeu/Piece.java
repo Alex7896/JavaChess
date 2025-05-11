@@ -4,7 +4,7 @@ import modele.jeu.decorators.DecoratorCasesAccessibles;
 import modele.plateau.Case;
 import modele.plateau.Plateau;
 
-public abstract class Piece {
+public abstract class Piece implements Cloneable {
     protected Plateau p;
     protected Case c;
     protected Couleur couleur;
@@ -35,5 +35,14 @@ public abstract class Piece {
 
     public Case getCase() {
         return c;
+    }
+
+    @Override
+    public Piece clone() {
+        try {
+            return (Piece) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(); // ne devrait jamais arriver
+        }
     }
 }

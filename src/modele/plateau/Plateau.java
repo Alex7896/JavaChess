@@ -7,7 +7,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Observable;
 
-public class Plateau extends Observable {
+public class Plateau extends Observable implements Cloneable {
     public static final int SIZE_X = 8;
     public static final int SIZE_Y = 8;
     private Case[][] tab;
@@ -21,7 +21,6 @@ public class Plateau extends Observable {
     public Jeu getJeu() {
         return jeu;
     }
-
 
     public Plateau() {
         initPlateauVide();
@@ -110,7 +109,6 @@ public class Plateau extends Observable {
         return tab;
     }
 
-    // TODO: Faire méthode getCaseRelative(Case source, Direction d) : Case
     public Case getCaseRelative(Case source, int dx, int dy) {
         Point p = new Point(map.get(source)); // copie pour ne pas modifier l'original
         p.x += dx;
@@ -121,5 +119,31 @@ public class Plateau extends Observable {
         }
 
         return tab[p.x][p.y];
+    }
+
+    public Plateau simulerCoup(Coup c) {
+        Plateau simulation = new Plateau();
+        simulation.initPlateauVide();
+
+        for (int x = 0; x < SIZE_X; x++) {
+            for (int y = 0; y < SIZE_Y; y++) {
+                Piece piece = this.tab[x][y].getPiece();
+                if (piece != null) {
+                    Piece copie = piece.clone();
+                    Case caseSim = simulation.tab[x][y];
+                    caseSim.setPiece(copie);
+                    copie.setCase(caseSim);
+                }
+            }
+        }
+
+        Case dep = simulation.tab[c.dep.x][c.dep.y];
+        Case arr = simulation.tab[c.arr.x][c.arr.y];
+        Piece pieceAMouv = dep.getPiece();
+        arr.setPiece(pieceAMouv);
+        dep.setPiece(null);
+        pieceAMouv.setCase(arr);
+
+        return simulation;
     }
 }
